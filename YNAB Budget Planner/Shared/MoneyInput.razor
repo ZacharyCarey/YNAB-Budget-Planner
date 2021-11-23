@@ -1,0 +1,136 @@
+﻿<style>
+    .error {
+        background: @ErrorColor;
+        border: @ErrorBorder;
+    }
+</style>
+
+<input 
+    id="@id"
+    name="@name"
+    type="text" 
+    class="@Class" 
+    value="@textValue" 
+    @oninput="@onInput" 
+    @onchange="@onChange" 
+    onfocus="this.select();" 
+/>
+
+@using System.Globalization;
+@using System.Linq;
+@using Backend.MoneyUtils;
+
+@code {
+
+    [Parameter]
+    public string name { get; set; }
+
+    [Parameter]
+    public string id { get; set; }
+
+    [Parameter]
+    public string ErrorColor { get; set; } = "#FEF1EC";
+
+    [Parameter]
+    public string ErrorBorder { get; set; } = "5px solid #CD0A0A";
+
+    [Parameter]
+    public EventCallback<Money> OnChange { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnError { get; set; }
+
+    [Parameter]
+    public Money Value {
+        get => value;
+        set {
+            textValue = value.ToString(true, true);
+            invokeChange(value);
+        }
+    }
+    private Money value = new Money();
+
+    public string Error {
+        get => error;
+        private set {
+            error = value;
+            if(value == null) {
+                Class = null;
+            } else {
+                Class = "error";
+                OnError.InvokeAsync(value);
+            }
+        }
+    }
+    private string error = null;
+
+    // HTML values
+    string textValue = new Money().ToString(true, true);
+    string Class = "";
+
+    void onInput(ChangeEventArgs args) {
+        string raw = args.Value.ToString().Replace("$", "").Replace(",", "").TrimStart('0');
+        int decimalIndex = raw.LastIndexOf('.');
+
+        if (decimalIndex < 0) {
+            // Decimal does not exists, as long as we only have numbers, format
+            decimal value;
+            if (decimal.TryParse(raw, out value)) {
+                Money money = new Money(value / 100.0m);
+                textValue = money.ToString(true, true);
+                base.StateHasChanged();
+                invokeChange(money);
+            } else {
+                Error = "Invalid number.";
+            }
+        } else {
+            string numbers = raw.Replace(".", "").TrimStart('0');
+            decimal value;
+            if (decimal.TryParse(numbers, out value)) {
+                int decimalCount = raw.Length - decimalIndex - 1;
+                if (decimalCount >= 2) {
+                    // Assume the user just typed another number (although could be a different situation)
+                    value /= 100;
+                    Money money = new Money(value);
+                    textValue = money.ToString(true, true);
+                    base.StateHasChanged();
+                    invokeChange(money);
+                } else {
+                    // For some reason, either because of deletion or a period was added,
+                    // not all the decimals are present
+                    for(int i = 0; i < decimalCount; i++) {
+                        value /= 10;
+                    }
+                    Money money = new Money(value);
+                    string result = money.ToString(true, true);
+                    textValue = result.Substring(0, result.Length - (2 - decimalCount));
+                    base.StateHasChanged();
+                    invokeChange(money);
+                }
+            } else {
+                Error = "Invalid number.";
+            }
+        }
+    }
+
+    void onChange(ChangeEventArgs args) {
+        Money result;
+        if(Money.TryParse(args.Value.ToString(), out result)) {
+            textValue = result.ToString(true, true);
+            base.StateHasChanged();
+            invokeChange(result);
+        } else {
+            Error = "Invalid number.";
+        }
+    }
+
+    void invokeChange(Money value) {
+        Error = null;
+        bool changed = (value != this.value);
+        this.value = value;
+        if (changed) {
+            OnChange.InvokeAsync(value);
+        }
+    }
+
+}

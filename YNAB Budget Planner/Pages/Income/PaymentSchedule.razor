@@ -1,0 +1,106 @@
+﻿@using Backend;
+@using Backend.Utils;
+
+<select name="interval" id="interval" value="@Schedule_Dropdown.ToString()" @onchange="Schedule_OnChange">
+    @foreach(var item in Enum.GetValues<IncomeFrequency>()) {
+        if (item != IncomeFrequency.Yearly) {
+            <option value="@item.ToString()">@item.GetDescription()</option>
+	    }
+	}
+</select>
+<div style="margin-left: 3ch; margin-top: 0.3ch;">
+    <div style="display: @showElement(IncomeFrequency.Weekly, IncomeFrequency.BiWeekly)">
+        <label for="weekSelector">On every: </label>
+        <select id="weekSelector" value="@WeekSelector.ToString()" @onchange="WeekSelector_OnChange" >
+            @foreach(var item in Enum.GetValues<DayOfWeek>()) {
+                <option value="@item.ToString()">@item.ToString()</option>
+			}
+        </select>
+        <br />
+    </div>
+    <div style="display: @showElement(IncomeFrequency.BiWeekly)">
+        <label for="dateSelector">Starting on: </label>
+        <input type="date" id="dateSelector" value="@DateSelector.ToString("yyyy-MM-dd")" @onchange="DateSelector_OnChange" />
+        <br />
+    </div>
+    <div style="display: @showElement(IncomeFrequency.SemiMonthly, IncomeFrequency.Monthly)">
+        <label for="daySelector" style="margin-left: @((Schedule_Dropdown == IncomeFrequency.SemiMonthly) ? "3ch;" : "0ch;")">On the </label>
+        <input type="number" id="daySelector" min="1" max="28" @bind="FirstDaySelector" style="width: 5ch" />
+        <label for="daySelector"> of the month</label>
+        <br />
+    </div>
+    <div style="display: @showElement(IncomeFrequency.SemiMonthly)">
+        and <br />
+        <input type="radio" id="radio-OnThe" checked="@(DayRadioSelected)" @onchange="@(() => DayRadioSelected = true)" style="margin-left: 3ch;" />
+        <label for="radio-OnThe">On the </label>
+        <input type="number" id="daySelector2" min="1" max="28" @bind="SecondDaySelector" style="width: 5ch" />
+        <label for="daySelector2"> of the month</label>
+        <br />
+        <input type="radio" id="radio-LastDay" checked="@(!DayRadioSelected)" @onchange="@(() => DayRadioSelected = false)" style="margin-left: 3ch;" />
+        <label for="radio-LastDay">On the last day of the month</label>
+        <br />
+        <input type="checkbox" id="adjustBox" @bind="AdjustWeekendsChecked" />
+        <label for="adjustBox">Adjust weekend dates to previous weekday.</label>
+    </div>
+</div>
+
+@code { 
+    public IncomeFrequency Schedule_Dropdown { get; private set; } = IncomeFrequency.SemiMonthly;
+    public DayOfWeek WeekSelector { get; private set; } = DayOfWeek.Monday;
+    public DateTime DateSelector { get; private set; } = DateTime.Now;
+    public int FirstDaySelector { get; private set; } = 1;
+    public bool DayRadioSelected { get; private set; } = false;
+    public int SecondDaySelector { get; private set; } = 1;
+    public bool AdjustWeekendsChecked { get; private set; } = false;
+    public int MonthlyDayPicker { get; private set; } = 1;
+
+
+
+    string showElement(params IncomeFrequency[] SelectedValue) {
+        return SelectedValue.Contains(Schedule_Dropdown) ? "block" : "none";
+    }
+
+    protected override void OnInitialized() {
+        base.OnInitialized();
+
+        GrossIncome income = AppDataWeb.AppData.Income;
+        if (income != null) {
+            Schedule_Dropdown = income.IncomeFrequency;
+            WeekSelector = income.OnEveryDayOfWeek;
+            DateSelector = income.StartingOn;
+            FirstDaySelector = Math.Min(28, income.StartingOn.Day);
+            DayRadioSelected = (income.SecondPayment <= 31);
+            SecondDaySelector = income.SecondPayment;
+            AdjustWeekendsChecked = income.AdjustToWeekends;
+            MonthlyDayPicker = Math.Min(28, income.StartingOn.Day);
+        }
+    }
+
+    void Schedule_OnChange(ChangeEventArgs args) {
+        IncomeFrequency frequency;
+        if(Enum.TryParse<IncomeFrequency>(args.Value.ToString(), out frequency)) {
+            Schedule_Dropdown = frequency;
+        } else {
+            Console.Error.WriteLine("Unknown Income Frequency Enum");
+        }
+    }
+
+    void WeekSelector_OnChange(ChangeEventArgs args) {
+        DayOfWeek day;
+        if(Enum.TryParse<DayOfWeek>(args.Value.ToString(), out day)) {
+            WeekSelector = day;
+        } else {
+            Console.Error.WriteLine("Unknown Day of Week Enum");
+        }
+    }
+
+    void DateSelector_OnChange(ChangeEventArgs args) {
+        DateTime date;
+        if(DateTime.TryParse(args.Value.ToString(), out date)) {
+            DateSelector = date;
+        } else {
+            Console.Error.WriteLine("Unable to parse date.");
+        }
+    }
+
+}

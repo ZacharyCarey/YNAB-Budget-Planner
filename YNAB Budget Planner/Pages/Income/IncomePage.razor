@@ -1,0 +1,172 @@
+﻿@page "/income"
+
+@inject IJSRuntime js
+@inject NavigationManager nav
+
+<style>
+    .row {
+        display: flex;
+    }
+
+    .column {
+        flex: 50%;
+    }
+
+    .indented {
+        padding-left: 7ch;
+        text-indent: -20px;
+    }
+
+    .input-validation-error {
+        background: #FEF1EC;
+        border: 5px solid #CD0A0A;
+    }
+</style>
+
+<div class="row">
+    <h2>Salary</h2>
+</div>
+<div class="row">
+    <div class="column">
+        <Salary @ref="salaryInput" OnFrequencyChange="OnSalaryFrequencyChange" OnMoneyChange="OnSalaryChange" />
+    </div>
+    <div class="column">
+        Yearly: @yearlyText <br />
+        Monthly: @monthlyText <br />
+        Weekly: @weeklyText <br />
+        Hourly: @hourlyText <br />
+    </div>
+</div>
+<div class="row" style="padding-top: 1ch; margin-top: 1ch; border-top: 8px solid #bbb;">
+    <h2>Payment Schedule</h2>
+</div>
+<div class="row">
+    <div class="column">
+        <PaymentSchedule @ref="paymentSchedule" />
+    </div>
+</div>
+<br />
+<br />
+<button type="button" class="btn btn-primary" @onclick="onSaveClick">Save Changes</button>
+
+
+@using System.Globalization;
+@using System.Linq;
+@using Backend.MoneyUtils;
+@using Backend;
+
+@code {
+    Salary salaryInput;
+    PaymentSchedule paymentSchedule;
+
+    private decimal numberVariable { get; set; }
+    string yearlyText = "$0.00";
+    string monthlyText = "$0.00";
+    string weeklyText = "$0.00";
+    string hourlyText = "$0.00";
+    string selectedSalary = "";
+
+    string TextProperty;
+    //TODO issue where numeric input boxes dont "change value" until they lose focus, thus not saving correctly in some cases
+    string testVar = new Money().ToString(true, true);
+    string testClass = "";
+
+    private Money salary = new Money();
+    private IncomeFrequency frequency = IncomeFrequency.Yearly;
+
+    protected override void OnInitialized() {
+        base.OnInitialized();
+        nav.LocationChanged += PageLeaving;
+    }
+
+    void PageLeaving(object o, LocationChangedEventArgs e) {
+        //TODO detect changes
+        //bool response = js.InvokeAsync<bool>("confirm", "Are you sure? Unsaved changes may be lost.");
+        //if (!response) {
+        //    e.c
+        //}
+    }
+
+    void SelectionChanged(ChangeEventArgs args) {
+        selectedSalary = args.Value.ToString();
+
+        AppDataWeb.AppData.Income = new Backend.GrossIncome();
+        AppDataWeb.AppData.Income.Salary = new Backend.MoneyUtils.Money(false, 78000, 0);
+    }
+
+    void OnSalaryChange(Money money) {
+        salary = money;
+        UpdateSalaryLabels();
+    }
+
+    void OnSalaryFrequencyChange(IncomeFrequency frequency) {
+        this.frequency = frequency;
+        UpdateSalaryLabels();
+    }
+
+    void UpdateSalaryLabels() {
+        Money money = salary;
+
+        //Transform our input into the yearly amount
+        if (frequency == IncomeFrequency.Monthly) {
+            money *= 12;
+        } else if (frequency == IncomeFrequency.Weekly) {
+            money *= 52;
+        } else if (frequency != IncomeFrequency.Yearly) {
+            money = new Money();
+        }
+
+        yearlyText = money.ToString(true, true);
+        monthlyText = (money / 12).ToString(true, true);
+        weeklyText = (money / 52).ToString(true, true);
+        hourlyText = (money / 2080).ToString(true, true);
+    }
+
+    void onSaveClick() {
+        if (AppDataWeb.AppData.Income == null) {
+            AppDataWeb.AppData.Income = new GrossIncome();
+        }
+        GrossIncome income = AppDataWeb.AppData.Income;
+
+        if (salaryInput.Error != null) {
+            js.InvokeVoidAsync("alert", "Invalid money input.");
+            return;
+        }
+
+        income.SalaryFrequency = frequency;
+        income.Salary = salary;
+
+        income.IncomeFrequency = paymentSchedule.Schedule_Dropdown;
+        income.OnEveryDayOfWeek = paymentSchedule.WeekSelector;
+        income.AdjustToWeekends = paymentSchedule.AdjustWeekendsChecked;
+
+        if (paymentSchedule.Schedule_Dropdown == IncomeFrequency.BiWeekly) {
+            DateTime date = paymentSchedule.DateSelector;
+            if (date.DayOfWeek != paymentSchedule.WeekSelector) {
+                js.InvokeVoidAsync("alert", "The starting date must match the selected day of the week.");
+                return;
+            }
+
+            income.StartingOn = date;
+        } else if (paymentSchedule.Schedule_Dropdown == IncomeFrequency.SemiMonthly) {
+            income.StartingOn = new DateTime(1, 1, paymentSchedule.FirstDaySelector);
+
+            if (income.StartingOn.Day >= income.SecondPayment) {
+                js.InvokeVoidAsync("alert", "Please choose a valid first and second payment date. The second payment should be on a day after the first payment.");
+                return;
+            }
+
+            if (paymentSchedule.DayRadioSelected) {
+                income.SecondPayment = paymentSchedule.SecondDaySelector;
+            } else {
+                income.SecondPayment = 32; //Anything  >31 is considered the last day of the month.
+            }
+        } else if (paymentSchedule.Schedule_Dropdown == IncomeFrequency.Monthly) {
+            income.StartingOn = new DateTime(1, 1, paymentSchedule.MonthlyDayPicker);
+        }
+
+        AppDataWeb.AppData.Income = income;
+        js.InvokeVoidAsync("alert", "Saved");
+    }
+
+}

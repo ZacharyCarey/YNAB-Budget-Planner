@@ -1,0 +1,63 @@
+﻿@inject IJSRuntime js
+@using Backend.InteractiveCharts.Data.GroupedData;
+
+
+<style>
+
+
+    .sunburst-tooltip {
+        display: none;
+        position: fixed;
+        max-width: 320px;
+        white-space: nowrap;
+        padding: 5px;
+        border-radius: 3px;
+        font: 12px sans-serif;
+        color: #eee;
+        background: rgba(0,0,0,0.65);
+        pointer-events: none;
+    }
+
+    .sunburst-tooltip .tooltip-title {
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 5px;
+    }
+</style>
+
+<h3>SunburstGraph</h3>
+<div @ref="graphDiv"></div>
+
+
+@code {
+    ElementReference graphDiv;
+
+    private bool canRender = false;
+
+    [Parameter]
+    public IGroupedData Data { 
+        get => data; 
+        set {
+            data = value;
+            if (canRender) {
+                render();
+            }
+        } 
+    }
+    private IGroupedData data;
+
+    protected override void OnAfterRender(bool firstRender) {
+        if(firstRender) {
+            render();
+            canRender = true;
+        }
+
+        base.OnAfterRenderAsync(firstRender);
+    }
+
+    private void render() {
+        if (data != null){
+            js.InvokeVoidAsync("generateGraph", graphDiv, data.AsJsonObject());
+        }
+    }
+}

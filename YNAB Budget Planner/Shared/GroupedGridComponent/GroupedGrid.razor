@@ -1,0 +1,75 @@
+﻿<style>
+    table {
+        font-family: Arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #dddddd;
+    }
+</style>
+
+<table>
+    <tr>
+        @ChildContent
+    </tr>
+    <CascadingValue Value="this">
+        @foreach (GridGroup row in Data) {
+            <GridRow Value="row" />
+        }
+    </CascadingValue>
+</table>
+
+@code {
+    public event Action ClearSelection;
+
+    // Razor parameter to get the child content (i.e. stuff between open and close tags)
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public GridCollection Data {
+        get => data;
+        set {
+            if(this.data != null) {
+                this.data.OnChildRemoved -= OnChildRemoved;
+            }
+            this.data = value;
+            if(value != null) {
+                value.OnChildRemoved += OnChildRemoved;
+            }
+        }
+    }
+    private GridCollection data;
+
+    public GridRow SelectedRow { get; set; }
+
+    protected override void OnParametersSet() {
+        base.OnParametersSet();
+    }
+
+    public void SetSelection(GridRow row) {
+        ClearSelection?.Invoke();
+        if (row != null && row != SelectedRow) {
+            row.RowBackground = "#12c4ff";
+            SelectedRow = row;
+        } else {
+            SelectedRow = null;
+        }
+    }
+
+    void OnChildRemoved(object sender, IGridRow removedChild) {
+        if (SelectedRow?.Value != null) {
+            if (SelectedRow.Value == removedChild) {
+                SetSelection(null);
+            }
+        }
+    }
+}

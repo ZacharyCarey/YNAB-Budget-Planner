@@ -1,0 +1,86 @@
+﻿<div class="modal @ModalClass" tabindex="-1" role="dialog" style="display:@ModalDisplay">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="onCancelClicked">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @ChildContent
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" @onclick="onSubmitClicked">@SubmitButtonText</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="onCancelClicked">@CancelButtonText</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (ShowBackdrop) {
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    public Guid Guid = Guid.NewGuid();
+    public string ModalDisplay = "none;";
+    public string ModalClass = "";
+    public bool ShowBackdrop = false;
+
+    // Razor parameter to get the child content (i.e. stuff between open and close tags)
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = "Title";
+
+    [Parameter]
+    public string SubmitButtonText { get; set; } = "Save Changes";
+
+    [Parameter]
+    public string CancelButtonText { get; set; } = "Close";
+
+    [Parameter]
+    public EventCallback OnOpen { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+    [Parameter]
+    public Func<bool> SubmitCondition { get; set; } = new Func<bool>(() => true);
+
+    protected override void OnInitialized() {
+        base.OnInitialized();
+    }
+
+    public void Open() {
+        ModalDisplay = "block;";
+        ModalClass = "Show";
+        ShowBackdrop = true;
+        OnOpen.InvokeAsync();
+        StateHasChanged();
+    }
+
+    void Close() {
+        ModalDisplay = "none";
+        ModalClass = "";
+        ShowBackdrop = false;
+        StateHasChanged();
+    }
+
+    void onCancelClicked() {
+        OnCancel.InvokeAsync();
+        Close();
+    }
+
+    void onSubmitClicked() {
+        if (SubmitCondition()) {
+            OnSubmit.InvokeAsync();
+            Close();
+        }
+    }
+}

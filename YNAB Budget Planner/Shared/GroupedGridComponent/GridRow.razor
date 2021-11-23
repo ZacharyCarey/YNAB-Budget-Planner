@@ -1,0 +1,133 @@
+﻿<style>
+    .expand-btn {
+        background-color: transparent;
+        background-repeat: no-repeat;
+        border: none;
+        cursor: pointer;
+        overflow: hidden;
+        outline: none;
+        width: 3ch;
+        height: 3ch;
+        margin-right: 0.5ch;
+    }
+
+    .btn-icon {
+        content: url('/Images/arrow-icon.png');
+        width: 100%;
+    }
+
+    td {
+        white-space: nowrap;
+    }
+
+    .no-button {
+        margin-left: 3.5ch;
+    }
+</style>
+
+<tr style="display: @(Hidden ? "none" : null); background-color: @RowBackground;" @onclick="OnRowClicked">
+    <!--
+        Foreach isn't really needed, I just wanted a variable for the first element and this was
+        the easiest way I could think of at the time.
+    -->
+    @foreach (string content in Value.Take(1)) {
+        <td style="padding-left: @(this.Indents * 3)ch;">
+            @if (Value.Children.Any()) {
+                <button class="expand-btn" style="transform: rotate(@(Collapsed ? "180" : "0")deg);" @onclick="OnButtonClick" @onclick:stopPropagation="true">
+                    <span class="btn-icon" />
+                </button>
+
+                @content
+            } else {
+                <span class="no-button">
+                    @content
+                </span>
+            }
+
+        </td>
+    }
+
+    <!--
+        Render all other elements, since they don't have a button and no indents
+    -->
+    @foreach (string content in Value.Skip(1)) {
+        <td>@content</td>
+    }
+</tr>
+
+<CascadingValue Value="Table">
+    @foreach (IGridRow child in Value.Children) {
+        <GridRow Value="child" Indents="@(this.Indents + 1)" Hidden="Collapsed" /> 
+    }
+</CascadingValue>
+
+@code {
+    bool Collapsed { get; set; } = false;
+    public string RowBackground { get; set; } = null;
+
+    [Parameter]
+    public IGridRow Value {
+        get {
+            return this.value;
+        }
+
+        set {
+            if(this.value != null) {
+                this.value.OnChildRemoved -= OnChildRemoved;
+            }
+            this.value = value;
+            if(value != null) {
+                value.OnChildRemoved += OnChildRemoved;
+            }
+        }
+    }
+    private IGridRow value;
+
+    [Parameter]
+    public int Indents { get; set; } = 0;
+
+    [Parameter]
+    public bool Hidden { get; set; } = false;
+
+    [CascadingParameter]
+    public Grid Table {
+        get => table;
+        set {
+            if(value != table && table != null) {
+                table.ClearSelection -= OnClearSelection;
+            }
+            if(value != null) {
+                value.ClearSelection += OnClearSelection;
+            }
+            table = value;
+        }
+    }
+    private Grid table;
+
+    void OnButtonClick(MouseEventArgs args) {
+        Collapsed = !Collapsed;
+    }
+
+    void OnRowClicked(MouseEventArgs args) {
+        /*if(RowBackground == null) {
+            RowBackground = "#12c4ff";
+        } else {
+            RowBackground = null;
+        }*/
+        Table.SetSelection(this);
+        StateHasChanged();
+    }
+
+    void OnClearSelection() {
+        RowBackground = null;
+        StateHasChanged();
+    }
+
+    void OnChildRemoved(object sender, IGridRow removedChild) {
+        if (Table?.SelectedRow?.Value != null) {
+            if(Table.SelectedRow.Value == removedChild) {
+                Table.SetSelection(null);
+            }
+        }
+    }
+}

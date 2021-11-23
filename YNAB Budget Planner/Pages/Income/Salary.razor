@@ -1,0 +1,69 @@
+﻿@using Backend;
+@using Backend.Utils;
+@using Backend.MoneyUtils;
+
+<label for="interval">Interval: </label>
+<select name="interval" id="interval" value="@SelectedInterval.ToString()" @onchange="onSelected">
+    @foreach (var item in new IncomeFrequency[] {
+        IncomeFrequency.Yearly,
+        IncomeFrequency.Monthly,
+        IncomeFrequency.Weekly,
+    }) {
+        <option value="@item.ToString()">@item.GetDescription()</option>
+    }
+</select>
+<br />
+<label for="salary">Amount: </label>
+<!--
+<BlazorUI.Shared.TextBox.MoneyInput name="salary" id="salary" Value="SalaryValue" OnChange="MoneyInput_Changed" />
+-->
+<MoneyInput @ref="moneyInput" name="salary" id="salary" Value="SalaryValue" OnChange="MoneyInput_Changed" />
+
+
+@code {
+    MoneyInput moneyInput;
+
+    public Money SalaryValue { get; set; } = new Money();
+
+    public IncomeFrequency SelectedInterval { get; private set; } = IncomeFrequency.Weekly;
+
+    [Parameter]
+    public EventCallback<Money> OnMoneyChange { get; set; }
+
+    [Parameter]
+    public EventCallback<IncomeFrequency> OnFrequencyChange { get; set; }
+
+    public string Error => moneyInput.Error;
+
+    protected override void OnInitialized() {
+        base.OnInitialized();
+
+        GrossIncome income = AppDataWeb.AppData.Income;
+        if (income != null) {
+            SelectedInterval = income.SalaryFrequency;
+            SalaryValue = income.Salary;
+        }
+
+        OnMoneyChange.InvokeAsync(SalaryValue);
+        OnFrequencyChange.InvokeAsync(SelectedInterval);
+    }
+
+    void onSelected(ChangeEventArgs args) {
+        IncomeFrequency interval;
+        if (Enum.TryParse<IncomeFrequency>(args.Value.ToString(), out interval)) {
+            if (interval != SelectedInterval) {
+                OnFrequencyChange.InvokeAsync(interval);
+            }
+            SelectedInterval = interval;
+        } else {
+            Console.Error.WriteLine("Unknown Inome Frequency.");
+        }
+    }
+
+    void MoneyInput_Changed(Money money) {
+        SalaryValue = money;
+        base.StateHasChanged();
+        OnMoneyChange.InvokeAsync(money);
+    }
+
+}

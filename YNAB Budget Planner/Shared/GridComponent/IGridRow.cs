@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace YNAB_Budget_Planner.Shared.GroupedGridComponent {
+namespace YNAB_Budget_Planner.Shared.GridComponent {
 	public abstract class IGridRow : IEnumerable<string> {
 
 		public event EventHandler<IGridRow> OnChildRemoved;
@@ -52,4 +54,5 @@ namespace YNAB_Budget_Planner.Shared.GroupedGridComponent {
 			return ((IEnumerable)GetContent()).GetEnumerator();
 		}
 	}
+
 }

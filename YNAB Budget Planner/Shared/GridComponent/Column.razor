@@ -1,0 +1,7 @@
+﻿<th>@ChildContent</th>
+
+@code {
+    // Razor parameter to get the child content (i.e. stuff between open and close tags)
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+}

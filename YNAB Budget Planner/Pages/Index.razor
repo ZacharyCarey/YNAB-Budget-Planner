@@ -1,4 +1,6 @@
 ﻿@page "/"
+@using YNAB_Budget_Planner.Backend
+@inject IJSRuntime js
 
 <PageTitle>Index</PageTitle>
 
@@ -6,9 +8,14 @@
 
 Budget Name: @budgetName
 <br />
-Welcome to your new app.
-
-<SurveyPrompt Title="How is Blazor working for you?" />
+<br />
+<button @onclick="saveBtnClick">Save</button>
+<br />
+<br />
+<InputFile OnChange="@LoadFiles" multiple />
+<br />
+<br />
+<br />
 
 @code{
     string budgetName = "";
@@ -18,4 +25,25 @@ Welcome to your new app.
         //budgetName = response;
         //return base.OnInitializedAsync();
     }
+
+    void saveBtnClick() {
+        //Console.WriteLine("lol");
+        //js.InvokeVoidAsync("saveAsFile", "test.txt", "Hello, world!");
+        //js.InvokeVoidAsync("rollCall");
+        AppDataWeb.DownloadAppData(js);
+    }
+
+    async void LoadFiles(InputFileChangeEventArgs e) {
+        //await using FileStream fs = new(e., FileMode.Create);
+        //using (var sr = new StreamReader()) {
+        //await e.File.OpenReadStream().CopyToAsync(Console.Out);
+        await AppDataWeb.UploadAppData(js, e.File);
+        //contents = sr.ReadToEnd();
+        //Console.WriteLine(sr.ReadToEnd());
+        //}
+        string money = AppDataWeb.AppData.Income.Salary.ToString(true, true);
+        base.StateHasChanged();
+    }
+
 }
+

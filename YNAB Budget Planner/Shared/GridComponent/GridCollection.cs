@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace YNAB_Budget_Planner.Shared.GroupedGridComponent {
-    public class GridCollection : IEnumerable<IGridRow> {
+namespace YNAB_Budget_Planner.Shared.GridComponent {
+	public class GridCollection : IEnumerable<IGridRow> {
+
 		public event EventHandler<IGridRow> OnChildRemoved;
 
 		private List<IGridRow> items = new List<IGridRow>();

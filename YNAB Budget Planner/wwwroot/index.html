@@ -2,6 +2,21 @@
 <html lang="en">
 
 <head>
+    <!--
+        Without going into details, browser caching was causing issues when developing
+        with Visual Studio and javascript files weren't being loaded correctly.
+
+        This magical function should clear the cache so everything loads correctly.
+        Should not be needed for release builds.
+        https://stackoverflow.com/questions/62611521/how-to-stop-chrome-caching-during-visual-studio-blazor-wasm-app-debugging
+    -->
+    <script type="text/javascript">
+        caches.delete("blazor-resources-/").then(function (e) {
+            console.log("'blazor-resources-/' cache deleted");
+        });
+    </script>
+
+
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>YNAB Budget Planner</title>
@@ -20,11 +35,14 @@
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
-<!--
-    <script src="js/ynab.js"></script>
-    <script src="YnabAccessToken.js"></script>
-    <script src="ynabAPI.js"></script>
--->
+    <!--
+        <script src="js/ynab.js"></script>
+        <script src="YnabAccessToken.js"></script>
+        <script src="ynabAPI.js"></script>
+    -->
+    <script src="saveAs.js"></script>
+    <script src="d3.v6.js"></script>
+    <script src="Graphs/zoomableSunburst.js"></script>
 </body>
 
 </html>

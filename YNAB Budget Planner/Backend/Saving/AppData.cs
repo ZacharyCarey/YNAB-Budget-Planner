@@ -8,31 +8,31 @@ namespace YNAB_Budget_Planner.Backend.Saving {
 
 		internal AppData() { }
 
-		private static readonly string AvailableIncomeCategory = "Available Income";
+		/*private static readonly string AvailableIncomeCategory = "Available Income";
 		public static readonly HashSet<string> ReservedCategories = new HashSet<string>() {
 			AvailableIncomeCategory
-		};
+		};*/
 
-		public SerializableDictionary<Vendor> Vendors { get; set; } = new SerializableDictionary<Vendor>();
-		public HashSet<string> Categories { get; set; } = new HashSet<string>();
+		//public SerializableDictionary<Vendor> Vendors { get; set; } = new SerializableDictionary<Vendor>();
+		//public HashSet<string> Categories { get; set; } = new HashSet<string>();
 		public GrossIncome? Income { get; set; } = null;
 		public SerializableList<IncomeDeduction> Deductions { get; set; } = new SerializableList<IncomeDeduction>();
-		public Budget Budgets { get; set; } = new Budget("Budgets");
+		//public Budget Budgets { get; set; } = new Budget("Budgets");
 
-		public Dictionary<uint, Budget> BudgetUidLookup = new Dictionary<uint, Budget>(); 
+		//public Dictionary<uint, Budget> BudgetUidLookup = new Dictionary<uint, Budget>(); 
 
-		private void StoreBudgetUIDs(Budget budget) {
+		/*private void StoreBudgetUIDs(Budget budget) {
 			BudgetUidLookup.Add(budget.UID, budget);
 			foreach(Budget child in budget) {
 				StoreBudgetUIDs(child);
 			}
-		}
+		}*/
 
 		public void LoadFromJson(JsonData Data) {
 			JsonObject data = (JsonObject)Data;
 			{
 				// Budgets MUST be loaded before Vendors to load links correctly
-				BudgetUidLookup.Clear();
+/*				BudgetUidLookup.Clear();
 				Budgets = new Budget("Budgets");
 				try {
 					Budgets.LoadFromJson(data["Budgets"]);
@@ -53,7 +53,7 @@ namespace YNAB_Budget_Planner.Backend.Saving {
 						vendor.LinkedBudget = BudgetUidLookup[(uint)vendor.BudgetUID];
 					}
 				}
-
+*/
 				JsonData IncomeData = data["Income"];
 				if (IncomeData == null) {
 					Income = null;
@@ -87,12 +87,12 @@ namespace YNAB_Budget_Planner.Backend.Saving {
 			JsonObject data = new JsonObject();
 			{
 				// Assign a Unique ID to budgets to save vendor/budget links
-				ApplyUID(0, Budgets);
+				//ApplyUID(0, Budgets);
 
-				data["Vendors"] = new SerializableList<Vendor>(Vendors.Values).SaveToJson();
+				//data["Vendors"] = new SerializableList<Vendor>(Vendors.Values).SaveToJson();
 				data["Income"] = Income?.SaveToJson();
 				data["Deductions"] = Deductions.SaveToJson();
-				data["Budgets"] = Budgets.SaveToJson();
+				//data["Budgets"] = Budgets.SaveToJson();
 			}
 			return data;
 		}

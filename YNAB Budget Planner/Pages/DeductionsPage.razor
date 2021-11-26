@@ -1,0 +1,205 @@
+﻿@page "/deductions"
+@using Backend.MoneyUtils
+@using YNAB_Budget_Planner.Shared.GridComponent
+@using YNAB_Budget_Planner.Shared.Modal
+@using YNAB_Budget_Planner.Shared
+@using Backend;
+
+<Modal @ref="modal" SubmitButtonText="Add" OnOpen="onModalOpened" OnCancel ="onModalCancel" OnSubmit="onModalSubmit" SubmitCondition="allowSubmission" >
+    <label for="name">Name: </label>
+    <input type="text" id="name" name="name" @bind="ModalName" >
+    <br>
+    <br>
+    <label for="amount">Amount: </label>
+    <MoneyInput @ref="modalAmountInput" id="amount" name="amount" Value="amountValue" OnChange="MoneyInput_Changed" />
+
+    <br>
+    <br>
+    Frequency:
+    <br>
+    <input type="radio" id="perpaycheck" name="frequency" checked="@(selectedFrequency == DeductionFrequency.PerPaycheck)" @onchange="@(() => selectedFrequency = DeductionFrequency.PerPaycheck)">
+    <label for="perpaycheck">Per Paycheck</label>
+    <br>
+    <input type="radio" id="monthly" name="frequency" checked="@(selectedFrequency == DeductionFrequency.Monthly)" @onchange="@(() => selectedFrequency = DeductionFrequency.Monthly)">
+    <label for="monthly">Monthly</label>
+</Modal>
+
+<style>
+    table {
+        border: 1px solid #CCC;
+        border-collapse: collapse;
+    }
+
+    td {
+        white-space: nowrap;
+    }
+
+    .positive-money {
+        color: #228B22;
+    }
+
+    .caution-money {
+        color: #DAA520;
+    }
+
+    .negative-money {
+        color: #FF0000;
+    }
+</style>
+
+
+<h3>DeductionsPage</h3>
+
+<table>
+    <tr>
+        <td>Average Income:</td>
+        <td>@(income.ToString(true, true))</td>
+    </tr>
+    <tr>
+        <td>Deductions: </td>
+        <td class="@(colorMoney(-totalDeductions))">@(totalDeductions.ToString(true, true))</td>
+    </tr>
+    <tr>
+        <td>Expected Income: </td>
+        <td class="@(colorMoney(net, warningLevel))">@(net.ToString(true, true))</td>
+    </tr>
+</table>
+
+<br />
+<br />
+
+<button @onclick="add_clicked">Add</button>
+<button @onclick="remove_clicked">Remove</button>
+<button @onclick="edit_clicked">Edit</button>
+
+<Grid Data="deductionRows" @ref="grid" style="margin-bottom: 10ch" >
+    <Column>Name</Column>
+    <Column>Amount</Column>
+    <Column>Frequency</Column>
+</Grid>
+
+@code {
+
+    #region Modal
+    Modal modal { get; set; }
+    string ModalName;
+    DeductionFrequency selectedFrequency = DeductionFrequency.PerPaycheck;
+    MoneyInput modalAmountInput;
+    string modalError { get => modalAmountInput.Error; }
+    public Money amountValue { get; set; } = new Money();
+
+    Money income = new Money();
+    Money totalDeductions = new Money();
+    Money net = new Money();
+    Money warningLevel = new Money();
+
+    protected override void OnInitialized() {
+        base.OnInitialized();
+
+        income = (AppDataWeb.AppData.Income.YearlySalary / 12);
+        totalDeductions = IncomeDeduction.CalculateAverageDeductions();
+        net = income - totalDeductions;
+        warningLevel = income / 10;
+
+        foreach(IncomeDeduction deduction in AppDataWeb.AppData.Deductions) {
+            deductionRows.Add(
+                new DeductionRow(deduction)
+            );
+        }
+    }
+
+    void MoneyInput_Changed(Money money) {
+        amountValue = money;
+        base.StateHasChanged();
+        //OnMoneyChange.InvokeAsync(money);
+    }
+
+    void onModalSubmit() {
+        // Add new value
+        IncomeDeduction deduction = new IncomeDeduction(ModalName, amountValue, selectedFrequency);
+        deductionRows.Add(
+            new DeductionRow(deduction)
+        );
+        AppDataWeb.AppData.Deductions.Add(deduction);
+    }
+
+    void onModalCancel() {
+
+    }
+
+    void onModalOpened() {
+        // Clear out previous data
+        ModalName = "";
+        selectedFrequency = DeductionFrequency.PerPaycheck;
+        amountValue = new Money();
+    }
+
+    bool allowSubmission() {
+        return modalAmountInput.Error == null;
+    }
+    #endregion
+
+    // Page variables
+    Grid grid { get; set; }
+
+
+
+    private GridCollection<DeductionRow> deductionRows = new GridCollection<DeductionRow>();
+
+    void add_clicked(MouseEventArgs args) {
+        modal.Open();
+        /*
+        IGridRow selectedRow = grid?.SelectedRow?.Value;
+        if (selectedRow != null && selectedRow is TestScoresRow selection) {
+            selection.Add("Failing Betty", 8, 0, 3);
+        } else if (selectedRow == null) {
+            data.Add(new TestScoresRow("Failing Betty", 8, 0, 3));
+    }
+    */
+    }
+
+    void remove_clicked(MouseEventArgs args) {
+        IGridRow selectedRow = grid?.SelectedRow?.Value;
+        if (selectedRow != null && selectedRow is DeductionRow selection) {
+            deductionRows.Remove(selection);
+            AppDataWeb.AppData.Deductions.Remove(selection.deduction);
+        }
+    }
+
+    void edit_clicked(MouseEventArgs args) {
+        IGridRow selectedRow = grid?.SelectedRow?.Value;
+        if (selectedRow != null && selectedRow is DeductionRow selection) {
+            //selection.PhysicsScore = 110;
+            //js.InvokeVoidAsync("alert", selection.Name);
+            //TODO edit button
+        }
+    }
+
+    public class DeductionRow : IGridRow {
+
+        public IncomeDeduction deduction;
+
+        public DeductionRow(IncomeDeduction deduction) : base() {
+            this.deduction = deduction;
+        }
+
+        public override IEnumerable<string> GetContent() {
+            return new string[] {
+				deduction.Name,
+				deduction.Amount.ToString(true, true),
+				deduction.Frequency.ToString(),
+			};
+        }
+    }
+
+    private string colorMoney(Money money, Money warning = new Money()) {
+        if(money < new Money()) {
+            return "negative-money";
+        }else if(money <= warning) {
+            return "warning-money";
+        } else {
+            return "positive-money";
+        }
+    }
+
+}

@@ -87,14 +87,14 @@ namespace YNAB_Budget_Planner.Backend {
 			return data;
 		}
 
-		public static Vendor FindFromAlias(string alias, AppData settings) {
+		/*public static Vendor FindFromAlias(string alias, AppData settings) {
 			foreach(Vendor vendor in settings.Vendors.Values) {
 				if (vendor.Aliases.Contains(alias)) {
 					return vendor;
 				}
 			}
 			return null;
-		}
+		}*/
 
 		public override string ToString() {
 			return this.Name;

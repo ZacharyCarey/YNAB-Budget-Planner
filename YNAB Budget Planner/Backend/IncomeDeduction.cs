@@ -47,6 +47,46 @@ namespace YNAB_Budget_Planner.Backend {
 			return Name;
 		}
 
+		public static Money CalculateAverageDeductions(/*GraphData RootData*/) {
+			GrossIncome income = AppDataWeb.AppData.Income;
+			IEnumerable<IncomeDeduction> deductions = AppDataWeb.AppData.Deductions;
+
+			// First calculate the number of received paychecks in a year, for per-paycheck deductions
+			int numberOfPaychecks = 0;
+			if (income.IncomeFrequency == IncomeFrequency.Yearly) {
+				numberOfPaychecks = 1;
+			} else if (income.IncomeFrequency == IncomeFrequency.Monthly) {
+				numberOfPaychecks = 12;
+			} else if (income.IncomeFrequency == IncomeFrequency.SemiMonthly) {
+				numberOfPaychecks = 24;
+			} else if (income.IncomeFrequency == IncomeFrequency.BiWeekly) {
+				numberOfPaychecks = 26;
+			} else if (income.IncomeFrequency == IncomeFrequency.Weekly) {
+				numberOfPaychecks = 52;
+			} else {
+				throw new InvalidOperationException("Unknown IncomeFrequency enum [" + income.IncomeFrequency.ToString() + "]");
+			}
+
+			// Now we can total the deductions for an entire year.
+			Budget budget = new Budget("Deductions");
+			foreach (IncomeDeduction deduction in deductions) {
+				Money deductionAmount;
+				if (deduction.Frequency == DeductionFrequency.Monthly) {
+					deductionAmount = deduction.Amount * 12;
+				} else if (deduction.Frequency == DeductionFrequency.PerPaycheck) {
+					deductionAmount = deduction.Amount * numberOfPaychecks;
+				} else {
+					throw new ArgumentOutOfRangeException("Invalid enum: " + deduction.Frequency.ToString());
+				}
+
+				// Average the yearly amount to get the monthly average
+				deductionAmount /= 12;
+				budget.Add(new Budget(deduction.Name, deductionAmount));
+			}
+
+			return budget.Amount; //RootData.Add(budget, false);
+		}
+
 	}
 
 	public enum DeductionFrequency {

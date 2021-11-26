@@ -41,7 +41,7 @@ namespace YNAB_Budget_Planner.Backend {
 		}
 
 		protected override Stream SaveStream() {
-			return new DownloadStream(this.javascript, "Settings.json");
+			return new DownloadStream(this.javascript, "Budget Planner.json");
 		}
 
 		#region Streams

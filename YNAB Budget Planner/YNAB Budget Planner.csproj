@@ -10,7 +10,6 @@
     <PackageReference Include="JsonSerializable" Version="1.2.3" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
-    <PackageReference Include="YNAB.Rest" Version="0.7.0" />
   </ItemGroup>
 
 </Project>

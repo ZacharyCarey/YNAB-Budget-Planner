@@ -1,7 +1,18 @@
 ﻿@page "/analysis"
+@using YNAB.Rest
 <h3>Analysis</h3>
 Please upload at least one bank statement to view your analysis
+<br />
+<button @onclick="API_Click">Test</button>
 
 @code {
+
+    public async void API_Click() {
+        //string response = await Ynab.GetBudgetName();
+        //Console.WriteLine("Budget Name: {0}", response);
+
+        CategoriesData response = await Ynab.GetCategories();
+        Console.WriteLine(response.PrintAll());
+    }
 
 }

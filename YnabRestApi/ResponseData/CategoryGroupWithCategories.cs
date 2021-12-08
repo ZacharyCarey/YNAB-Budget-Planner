@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
@@ -34,6 +35,11 @@ namespace YnabRestApi.ResponseData {
         /// </summary>
         [JsonPropertyName("categories")]
         public IList<Category> Categories { get; set; } = new List<Category>();
+
+
+        public override string ToString() {
+            return JsonSerializer.Serialize(this, new JsonSerializerOptions() { WriteIndented = true });
+        }
 
     }
 

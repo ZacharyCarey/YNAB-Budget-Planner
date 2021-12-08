@@ -1,7 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using YNAB_Budget_Planner;
-using YnabRestApi.Data;
+using YnabRestApi.ResponseData;
 
-
-BudgetData budget = Ynab.GetBudget();
+CategoriesData budget = Ynab.GetCategories();
 Console.WriteLine(budget);

@@ -1,6 +1,6 @@
 ﻿
 using YnabRestApi;
-using YnabRestApi.Data;
+using YnabRestApi.ResponseData;
 
 namespace YNAB_Budget_Planner {
 
@@ -12,7 +12,7 @@ namespace YNAB_Budget_Planner {
             ynab = ApiClientFactory.Create(YnabAccessToken.Token);
         }
 
-        private static T? GetResponse<T>(Task<ApiResponse<T>> task) where T : class {
+        private static T? GetResponse<T>(Task<ApiResponse<T>> task) where T : class, new() {
             // HTTP Error codes show up during task.Wait().
             // See errors here: https://api.youneedabudget.com/#errors
             try {
@@ -23,19 +23,18 @@ namespace YNAB_Budget_Planner {
             }
         }
 
-        public static BudgetData GetBudget(string budgetId = "last-used") {
+        /*public static BudgetData GetBudget(string budgetId = "last-used") {
             return GetResponse(ynab.GetBudget(budgetId));
-        }
+        }*/
 
         /*public static async Task<string> GetBudgetName() {
             ApiResponse<BudgetsData> response = await ynab.GetBudgets();
             return response.Data.Budgets[0].Name;
-        }
-
-        public static async Task<CategoriesData> GetCategories(string budgetId = "last-used") {
-            ApiResponse<CategoriesData> response = await ynab.GetCategories(budgetId);
-            return response.Data;
         }*/
+
+        public static CategoriesData GetCategories(string budgetId = "last-used") {
+            return GetResponse(ynab.GetCategories(budgetId));
+        }
 
     }
 }

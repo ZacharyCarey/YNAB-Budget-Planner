@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using YNAB.Rest;
+using YnabRestApi.ResponseData;
 
 namespace YNAB_Budget_Planner {
     public static class ToStringExtensions {
@@ -8,9 +8,9 @@ namespace YNAB_Budget_Planner {
             StringBuilder sb = new();
 
             sb.AppendLine("categories: [");
-            if (data.Categories != null) {
-                foreach (var category in data.Categories) {
-                    sb.Append("\tid: ");
+            if (data.CategoryGroups != null) {
+                foreach (var category in data.CategoryGroups) {
+/*                    sb.Append("\tid: ");
                     sb.AppendLine(category.Id);
 
                     sb.Append("\tcategory_group_id: ");
@@ -69,7 +69,7 @@ namespace YNAB_Budget_Planner {
 
                     sb.Append("\tdeleted: ");
                     sb.AppendLine(category.Deleted.ToString());
-                }
+*/                }
             }
             sb.Append("]");
 

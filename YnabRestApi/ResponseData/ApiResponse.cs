@@ -7,24 +7,17 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace YnabRestApi.ResponseData {
-    public class ApiResponse<T> {
+    public class ApiResponse<T> where T : new() {
 
         [JsonPropertyName("data")]
-        public T? Data { get; set; }
+        public T Data { get; set; } = new T();
 
-        [JsonPropertyName("error")]
-        public YnabError? Error { get; set; }
+        //[JsonPropertyName("error")]
+        //public YnabError? Error { get; set; }
 
         public override string ToString() {
             return JsonSerializer.Serialize(this, new JsonSerializerOptions() { WriteIndented = true });
         }
 
-        /* JSON
-{
-  "data": {
-    ...
-  }
-}
-*/
     }
 }

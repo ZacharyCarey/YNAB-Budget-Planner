@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace YnabRestApi.ResponseData {
-    public class CategoryGroup {
+    public class CategoryGroupWithCategories {
 
         /// <summary>
         /// $uuid
@@ -29,6 +29,12 @@ namespace YnabRestApi.ResponseData {
         [JsonPropertyName("deleted")]
         public bool Deleted { get; set; } = false;
 
+        /// <summary>
+        /// Category group categories. Amounts (budgeted, activity, balance, etc.) are specific to the current budget month (UTC).
+        /// </summary>
+        [JsonPropertyName("categories")]
+        public IList<Category> Categories { get; set; } = new List<Category>();
+
     }
 
     /*
@@ -39,5 +45,10 @@ Whether or not the category group is hidden
 
 deleted*	boolean
 Whether or not the category group has been deleted. Deleted category groups will only be included in delta requests.
+
+categories*	[
+Category group categories. Amounts (budgeted, activity, balance, etc.) are specific to the current budget month (UTC).
+
+Category{...}]
      */
 }

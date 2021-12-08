@@ -1,6 +1,6 @@
 ﻿
 using YnabRestApi;
-using YnabRestApi.ResponseData;
+using YnabRestApi.Data;
 
 namespace YNAB_Budget_Planner {
 

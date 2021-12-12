@@ -1,17 +1,58 @@
 ﻿@page "/analysis"
-@using YNAB.Rest
+@using YNAB_Budget_Planner.Backend
+@using YNAB_Budget_Planner.Backend.InteractiveCharts.Data.GroupedData
+@using YNAB_Budget_Planner.Backend.MoneyUtils
+@using YNAB_Budget_Planner.Shared.Graphs
+@using YnabRestApi.ResponseData
+
 <h3>Analysis</h3>
 Please upload at least one bank statement to view your analysis
 <br />
 <button @onclick="API_Click">Test</button>
 
+<SunburstGraph @Data="GraphData" />
+
 @code {
 
-    public async void API_Click() {
+    IGroupedData GraphData { get; set; }
+
+    protected override async Task OnInitializedAsync() {
+        GroupCategory data = new("Budget");
+        CategoriesData categories = Ynab.GetCategories();
+        foreach(CategoryGroupWithCategories group in categories.CategoryGroups) {
+            GroupCategory groupData = data.Add(group.Name);
+            foreach(Category category in group.Categories) {
+                string? goalType = category.GoalType;
+                if (goalType == "NEED") {
+                    if (category.GoalTarget != null) {
+                        groupData.Add(category.Name, (int)category.GoalTarget / 10);
+                    }
+                }
+            }
+        }
+
+        if(AppDataWeb.AppData.Income != null){
+            Money income = (AppDataWeb.AppData.Income.YearlySalary / 12);
+            Money totalDeductions = IncomeDeduction.CalculateAverageDeductions();
+            Money net = income - totalDeductions;
+
+            data.Add("Available", (int)net.AsLong() - data.Value);
+        }
+
+        GraphData = data;
+
+        //return base.OnInitializedAsync();
+    }
+
+    protected override void OnInitialized() {
+        base.OnInitialized();
+    }
+
+    public void API_Click() {
         //string response = await Ynab.GetBudgetName();
         //Console.WriteLine("Budget Name: {0}", response);
 
-        CategoriesData response = await Ynab.GetCategories();
+        CategoriesData response = Ynab.GetCategories();
         Console.WriteLine(response.PrintAll());
     }
 

@@ -129,6 +129,11 @@ function getNodeStack(d) {
 
 
 function generateGraph(element, data) {
+    // First delete the previous graph
+    while (element.firstChild) {
+        element.removeChild(element.firstChild);
+    }
+
     var chart = {};
 
     chart.color = d3.scaleOrdinal().range(d3.quantize(d3.interpolateRainbow, data.children.length + 1));

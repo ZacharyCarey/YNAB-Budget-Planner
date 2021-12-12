@@ -39,24 +39,24 @@
         get => data; 
         set {
             data = value;
-            if (canRender) {
-                render();
-            }
+            render();
         } 
     }
-    private IGroupedData data;
+    private IGroupedData data = new GroupCategory("N/A");
 
     protected override void OnAfterRender(bool firstRender) {
-        if(firstRender) {
-            render();
-            canRender = true;
+        if (!canRender) {
+            if (!string.IsNullOrEmpty(graphDiv.Id)) {
+                canRender = true;
+                render();
+            }
         }
 
         base.OnAfterRenderAsync(firstRender);
     }
 
     private void render() {
-        if (data != null){
+        if (data != null && canRender){
             js.InvokeVoidAsync("generateGraph", graphDiv, data.AsJsonObject());
         }
     }

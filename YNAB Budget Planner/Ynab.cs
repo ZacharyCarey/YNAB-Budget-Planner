@@ -12,6 +12,10 @@ namespace YNAB_Budget_Planner {
             ynab = ApiClientFactory.Create(YnabAccessToken.Token);
         }
 
+        public static void SetAccessToken(string Token) {
+            ynab = ApiClientFactory.Create(Token);
+        }
+
         private static T? GetResponse<T>(Task<ApiResponse<T>> task) where T : class, new() {
             // HTTP Error codes show up during task.Wait().
             // See errors here: https://api.youneedabudget.com/#errors

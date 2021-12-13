@@ -52,8 +52,8 @@
 
 @using System.Globalization;
 @using System.Linq;
-@using Backend.MoneyUtils;
-@using Backend;
+@using Common
+@using Common.MoneyUtils
 
 @code {
     Salary salaryInput;
@@ -90,8 +90,8 @@
     void SelectionChanged(ChangeEventArgs args) {
         selectedSalary = args.Value.ToString();
 
-        AppDataWeb.AppData.Income = new Backend.GrossIncome();
-        AppDataWeb.AppData.Income.Salary = new Backend.MoneyUtils.Money(false, 78000, 0);
+        AppDataWeb.AppData.Income = new GrossIncome();
+        AppDataWeb.AppData.Income.Salary = new Money(false, 78000, 0);
     }
 
     void OnSalaryChange(Money money) {

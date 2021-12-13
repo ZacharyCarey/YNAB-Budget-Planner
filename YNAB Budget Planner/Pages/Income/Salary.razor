@@ -1,6 +1,6 @@
-﻿@using Backend;
-@using Backend.Utils;
-@using Backend.MoneyUtils;
+﻿@using Common
+@using Common.MoneyUtils
+@using Common.Utils
 
 <label for="interval">Interval: </label>
 <select name="interval" id="interval" value="@SelectedInterval.ToString()" @onchange="onSelected">

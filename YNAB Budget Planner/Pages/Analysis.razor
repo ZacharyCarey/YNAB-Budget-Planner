@@ -1,7 +1,7 @@
 ﻿@page "/analysis"
-@using YNAB_Budget_Planner.Backend
-@using YNAB_Budget_Planner.Backend.InteractiveCharts.Data.GroupedData
-@using YNAB_Budget_Planner.Backend.MoneyUtils
+@using Common
+@using Common.InteractiveCharts.Data.GroupedData
+@using Common.MoneyUtils
 @using YNAB_Budget_Planner.Shared.Graphs
 @using YnabRestApi.ResponseData
 
@@ -33,7 +33,7 @@ Please upload at least one bank statement to view your analysis
 
         if(AppDataWeb.AppData.Income != null){
             Money income = (AppDataWeb.AppData.Income.YearlySalary / 12);
-            Money totalDeductions = IncomeDeduction.CalculateAverageDeductions();
+            Money totalDeductions = IncomeDeduction.CalculateAverageDeductions(AppDataWeb.IAppData);
             Money net = income - totalDeductions;
 
             data.Add("Available", (int)net.AsLong() - data.Value);

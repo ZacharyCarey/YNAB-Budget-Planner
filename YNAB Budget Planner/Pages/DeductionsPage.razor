@@ -1,9 +1,9 @@
 ﻿@page "/deductions"
-@using Backend.MoneyUtils
+@using Common
+@using Common.MoneyUtils
 @using YNAB_Budget_Planner.Shared.GridComponent
 @using YNAB_Budget_Planner.Shared.Modal
 @using YNAB_Budget_Planner.Shared
-@using Backend;
 
 <Modal @ref="modal" SubmitButtonText="Add" OnOpen="onModalOpened" OnCancel ="onModalCancel" OnSubmit="onModalSubmit" SubmitCondition="allowSubmission" >
     <label for="name">Name: </label>
@@ -97,7 +97,7 @@
         base.OnInitialized();
 
         income = (AppDataWeb.AppData.Income.YearlySalary / 12);
-        totalDeductions = IncomeDeduction.CalculateAverageDeductions();
+        totalDeductions = IncomeDeduction.CalculateAverageDeductions(AppDataWeb.IAppData);
         net = income - totalDeductions;
         warningLevel = income / 10;
 

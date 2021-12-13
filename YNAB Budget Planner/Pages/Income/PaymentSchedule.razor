@@ -1,5 +1,5 @@
-﻿@using Backend;
-@using Backend.Utils;
+﻿@using Common
+@using Common.Utils
 
 <select name="interval" id="interval" value="@Schedule_Dropdown.ToString()" @onchange="Schedule_OnChange">
     @foreach(var item in Enum.GetValues<IncomeFrequency>()) {

@@ -1,4 +1,5 @@
-﻿using Common.MoneyUtils;
+﻿using Common.InteractiveCharts.Data.GroupedData;
+using Common.MoneyUtils;
 using Common.Saving;
 using JsonSerializable;
 using System;
@@ -48,7 +49,7 @@ namespace Common {
 			return Name;
 		}
 
-		public static Money CalculateAverageDeductions(IAppData appData /*GraphData RootData*/) {
+		public static Money CalculateAverageDeductions(IAppData appData, GroupCategory graph = null) {
 			GrossIncome income = appData.Settings.Income;
 			IEnumerable<IncomeDeduction> deductions = appData.Settings.Deductions;
 
@@ -69,7 +70,7 @@ namespace Common {
 			}
 
 			// Now we can total the deductions for an entire year.
-			Budget budget = new Budget("Deductions");
+			Money budget = new Money(); //Budget budget = new Budget("Deductions");
 			foreach (IncomeDeduction deduction in deductions) {
 				Money deductionAmount;
 				if (deduction.Frequency == DeductionFrequency.Monthly) {
@@ -82,10 +83,13 @@ namespace Common {
 
 				// Average the yearly amount to get the monthly average
 				deductionAmount /= 12;
-				budget.Add(new Budget(deduction.Name, deductionAmount));
+				budget += deductionAmount; //budget.Add(new Budget(deduction.Name, deductionAmount));
+				if(graph != null) {
+					graph.Add(deduction.Name, (int)deductionAmount.AsLong());
+                }
 			}
 
-			return budget.Amount; //RootData.Add(budget, false);
+			return budget; //budget.Amount; //RootData.Add(budget, false);
 		}
 
 	}

@@ -29,8 +29,11 @@ namespace Desktop_Budget_Planner.Forms {
             this.incomeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deductionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.yNABToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.BudgetSunburst = new InteractiveCharts.Sunburst.ZoomableSunburst();
             this.devToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.BudgetSunburst = new InteractiveCharts.Sunburst.ZoomableSunburst();
+            this.YnabButton = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.DownloadDateLabel = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -44,30 +47,37 @@ namespace Desktop_Budget_Planner.Forms {
             this.devToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1373, 42);
+            this.menuStrip1.Size = new System.Drawing.Size(1373, 40);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
             // incomeToolStripMenuItem
             // 
             this.incomeToolStripMenuItem.Name = "incomeToolStripMenuItem";
-            this.incomeToolStripMenuItem.Size = new System.Drawing.Size(113, 38);
+            this.incomeToolStripMenuItem.Size = new System.Drawing.Size(113, 36);
             this.incomeToolStripMenuItem.Text = "Income";
             this.incomeToolStripMenuItem.Click += new System.EventHandler(this.incomeToolStripMenuItem_Click);
             // 
             // deductionsToolStripMenuItem
             // 
             this.deductionsToolStripMenuItem.Name = "deductionsToolStripMenuItem";
-            this.deductionsToolStripMenuItem.Size = new System.Drawing.Size(155, 38);
+            this.deductionsToolStripMenuItem.Size = new System.Drawing.Size(155, 36);
             this.deductionsToolStripMenuItem.Text = "Deductions";
             this.deductionsToolStripMenuItem.Click += new System.EventHandler(this.deductionsToolStripMenuItem_Click);
             // 
             // yNABToolStripMenuItem
             // 
             this.yNABToolStripMenuItem.Name = "yNABToolStripMenuItem";
-            this.yNABToolStripMenuItem.Size = new System.Drawing.Size(94, 38);
+            this.yNABToolStripMenuItem.Size = new System.Drawing.Size(94, 36);
             this.yNABToolStripMenuItem.Text = "YNAB";
             this.yNABToolStripMenuItem.Click += new System.EventHandler(this.yNABToolStripMenuItem_Click);
+            // 
+            // devToolStripMenuItem
+            // 
+            this.devToolStripMenuItem.Name = "devToolStripMenuItem";
+            this.devToolStripMenuItem.Size = new System.Drawing.Size(76, 36);
+            this.devToolStripMenuItem.Text = "Dev";
+            this.devToolStripMenuItem.Click += new System.EventHandler(this.devToolStripMenuItem_Click);
             // 
             // BudgetSunburst
             // 
@@ -76,27 +86,53 @@ namespace Desktop_Budget_Planner.Forms {
             | System.Windows.Forms.AnchorStyles.Right)));
             this.BudgetSunburst.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.BudgetSunburst.Data = null;
-            this.BudgetSunburst.Location = new System.Drawing.Point(0, 46);
+            this.BudgetSunburst.Location = new System.Drawing.Point(0, 98);
             this.BudgetSunburst.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.BudgetSunburst.Name = "BudgetSunburst";
-            this.BudgetSunburst.Size = new System.Drawing.Size(1358, 777);
+            this.BudgetSunburst.Size = new System.Drawing.Size(1358, 725);
             this.BudgetSunburst.TabIndex = 1;
-            this.BudgetSunburst.TooltipContent = "return \"Size: \" + format(d.value);";
-            this.BudgetSunburst.TooltipTitle = "var excludeRoot = false;\nreturn getNodeStack(d).slice(excludeRoot ? 1 : 0).map(fu" +
-    "nction(d) {\nreturn d.data.name;\n}).join(\' &rarr; \');";
+            this.BudgetSunburst.TooltipContent = "var formatter = new Intl.NumberFormat(\'en-US\', {\r\nstyle: \'currency\',\r\ncurrency: \'" +
+    "USD\',\r\n});\r\nreturn \"Amount: \" + formatter.format(d.value / 100);\r\n";
+            this.BudgetSunburst.TooltipTitle = "var excludeRoot = false;\r\nreturn getNodeStack(d).slice(excludeRoot ? 1 : 0).map(f" +
+    "unction(d) {\r\nreturn d.data.name;\r\n}).join(\' &rarr; \');\r\n";
+            this.BudgetSunburst.Load += new System.EventHandler(this.BudgetSunburst_Load);
             // 
-            // devToolStripMenuItem
+            // YnabButton
             // 
-            this.devToolStripMenuItem.Name = "devToolStripMenuItem";
-            this.devToolStripMenuItem.Size = new System.Drawing.Size(76, 38);
-            this.devToolStripMenuItem.Text = "Dev";
-            this.devToolStripMenuItem.Click += new System.EventHandler(this.devToolStripMenuItem_Click);
+            this.YnabButton.Location = new System.Drawing.Point(12, 43);
+            this.YnabButton.Name = "YnabButton";
+            this.YnabButton.Size = new System.Drawing.Size(150, 46);
+            this.YnabButton.TabIndex = 2;
+            this.YnabButton.Text = "YNAB";
+            this.YnabButton.UseVisualStyleBackColor = true;
+            this.YnabButton.Click += new System.EventHandler(this.YnabButton_Click);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(168, 50);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(241, 32);
+            this.label1.TabIndex = 3;
+            this.label1.Text = "Last downloaded on: ";
+            // 
+            // DownloadDateLabel
+            // 
+            this.DownloadDateLabel.AutoSize = true;
+            this.DownloadDateLabel.Location = new System.Drawing.Point(415, 50);
+            this.DownloadDateLabel.Name = "DownloadDateLabel";
+            this.DownloadDateLabel.Size = new System.Drawing.Size(73, 32);
+            this.DownloadDateLabel.TabIndex = 4;
+            this.DownloadDateLabel.Text = "None";
             // 
             // AnalysisForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(13F, 32F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1373, 838);
+            this.Controls.Add(this.DownloadDateLabel);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.YnabButton);
             this.Controls.Add(this.BudgetSunburst);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
@@ -118,5 +154,8 @@ namespace Desktop_Budget_Planner.Forms {
         private ToolStripMenuItem yNABToolStripMenuItem;
         private InteractiveCharts.Sunburst.ZoomableSunburst BudgetSunburst;
         private ToolStripMenuItem devToolStripMenuItem;
+        private Button YnabButton;
+        private Label label1;
+        private Label DownloadDateLabel;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Common;
+using Common.Goals;
 using Common.InteractiveCharts.Data.GroupedData;
 using Common.MoneyUtils;
 using Common.Saving;
@@ -23,6 +24,9 @@ namespace Desktop_Budget_Planner.Forms {
         private YnabApi ynab;
         private YnabCache cache = null;
         private const string CacheFileName = "YNAB Cache.json";
+        private Dictionary<string, bool> VisibleCategories = new();
+
+        private Dictionary<string, Goal> goals { get => appData.Settings.Goals; }
 
         public AnalysisForm() {
             InitializeComponent();
@@ -51,10 +55,10 @@ namespace Desktop_Budget_Planner.Forms {
             }
 
             // Load YNAB data into graph
-            GenerateGraphData();
+            GenerateGraphData(null);
         }
 
-        private void GenerateGraphData() {
+        private void GenerateGraphData(YnabCache? OldCache) {
             if(cache == null || cache.Data == null) {
                 GroupCategory cat = new("null");
                 cat.Add("N/A", 1);
@@ -70,21 +74,34 @@ namespace Desktop_Budget_Planner.Forms {
             GroupCategory budgetsGroup = data.Add("Budgets");
             foreach (CategoryGroupWithCategories group in categories.CategoryGroups) {
                 GroupCategory groupData = budgetsGroup.Add(group.Name);
-                foreach (Category category in group.Categories) {
-                    string? goalType = category.GoalType;
-                    if (goalType == "NEED") {
-                        if (category.GoalTarget != null && category.GoalMonthsToBudget != null) {
-                            Money goal = Money.FromLong((long)category.GoalTarget / 10); // TODO add milliunits conversion
-                            int months = (int)category.GoalMonthsToBudget;
-                            groupData.Add(category.Name, (int)(goal / months).AsLong());
-                        }
-                    }else if(goalType == "TBD") {
-                        if(category.GoalTarget != null && category.GoalMonthsToBudget != null) {
-                            Money goal = Money.FromLong((long)category.GoalTarget / 10); // TODO add milliunits conversion
-                            int months = (int)category.GoalMonthsToBudget;
-                            groupData.Add(category.Name, (int)(goal / months).AsLong());
-                        }
+                foreach (Category category in group.Categories.Where(x => x.GoalType != null)) {
+                    // If updating the cache, check to see if the category changed
+                    bool changed = false;
+                    if (OldCache != null) {
+                        changed = category.HasChanged(OldCache[category.Id]);
                     }
+
+                    // First try to find an existing goal
+                    Goal? goal = null;
+                    if (!goals.TryGetValue(category.Id, out goal) || changed) {
+                        // Ask the user to enter goal information
+                        //Money goalTarget = ((category.GoalTarget == null) ? new Money() : Money.FromLong((long)category.GoalTarget / 10));
+                        Goal newGoal = TargetManualEntryForm.RequestNewGoal(category.Name, category, goal);
+                        goals[category.Id] = newGoal;
+                        appData.Save();
+                    }
+
+                    // Check if this category should be visible
+                    bool visible;
+                    if (!VisibleCategories.TryGetValue(category.Id, out visible)) {
+                        visible = true;
+                        VisibleCategories[category.Id] = true;
+                    }
+
+                    if (visible && goal != null) {
+                        groupData.Add(category.Name, (int)goal.MonthlyExpense.AsLong());
+                    }
+
                 }
             }
 
@@ -94,8 +111,10 @@ namespace Desktop_Budget_Planner.Forms {
             if (appData.Settings.Income != null) {
                 Money income = (appData.Settings.Income.YearlySalary / 12);
                 Money net = income - averageDeductions;
-
-                data.Add("Available", (int)net.AsLong() - budgetsGroup.Value);
+                int netValue = (int)net.AsLong();
+                if (netValue >= budgetsGroup.Value) {
+                    data.Add("Available", (int)net.AsLong() - budgetsGroup.Value);
+                }
             }
 
             BudgetSunburst.Data = data;
@@ -104,18 +123,18 @@ namespace Desktop_Budget_Planner.Forms {
 
         private void incomeToolStripMenuItem_Click(object sender, EventArgs e) {
             new IncomeSettingsForm(appData).ShowDialog();
-            GenerateGraphData();
+            GenerateGraphData(null);
         }
 
         private void deductionsToolStripMenuItem_Click(object sender, EventArgs e) {
             new DeductionsSettingsForm(appData).ShowDialog();
-            GenerateGraphData();
+            GenerateGraphData(null);
         }
 
         private void yNABToolStripMenuItem_Click(object sender, EventArgs e) {
             new YnabLoginForm(appData).ShowDialog();
             ynab = ApiClientFactory.Create(appData.Settings.YnabApiToken ?? "");
-            GenerateGraphData();
+            GenerateGraphData(null);
         }
 
         private void devToolStripMenuItem_Click(object sender, EventArgs e) {
@@ -131,7 +150,10 @@ namespace Desktop_Budget_Planner.Forms {
             Task<ApiResponse<CategoriesData>> task = ynab.GetCategories("last-used");
             // TODO loading bar
             task.Wait();
+            YnabCache? oldCache = null;
             if (task.Result != null && task.Result.Data != null) {
+                oldCache = cache;
+
                 // Successful download, cache the data with a timestamp
                 cache = new YnabCache();
                 cache.CacheDate = DateTime.Now;
@@ -140,9 +162,45 @@ namespace Desktop_Budget_Planner.Forms {
                 // Save the cache to file so it can be loaded next time the app is used
                 string json = JsonSerializer.Serialize(cache, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(CacheFileName, json);
+
+                VisibleCategories.Clear();
             }
 
-            GenerateGraphData();
+            GenerateGraphData(oldCache);
+        }
+
+        /*public IEnumerable<KeyValuePair<string, bool>> GetVisibleCategories() {
+            return this.VisibleCategories;
+        }*/
+
+        public bool IsCategoryVisible(Category category) {
+            bool visible;
+            if (!VisibleCategories.TryGetValue(category.Id, out visible)) {
+                visible = false;
+            }
+            return visible;
+        }
+
+        public void SetVisibleCategory(string id, bool visible) {
+            this.VisibleCategories[id] = visible;
+            GenerateGraphData(null);
+        }
+
+        private void hideCategoriesToolStripMenuItem_Click(object sender, EventArgs e) {
+            new CategoryVisibilityForm(this, GetCategoriesWithGroup()).Show();
+        }
+
+        private IEnumerable<Tuple<string, Category>> GetCategoriesWithGroup() {
+            if (cache == null) {
+                yield break;
+            }
+
+            foreach (CategoryGroupWithCategories group in cache.Data.CategoryGroups) {
+                foreach (Category category in group.Categories.Where(x => x.GoalType != null)) {
+                    yield return new Tuple<string, Category>(group.Name, category);
+
+                }
+            }
         }
     }
 }

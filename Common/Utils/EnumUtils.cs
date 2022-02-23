@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 
 namespace Common.Utils {
-	public static class EnumExtensions {
+	public static class EnumUtils {
 
         public static string GetDescription(this Enum value) {
             Type type = value.GetType();
@@ -22,6 +22,14 @@ namespace Common.Utils {
                 }
             }
             return null;
+        }
+
+        public static T ParseEnumOrDefault<T>(string parse, T defaultValue = default(T)) where T : struct {
+            T result;
+            if (!Enum.TryParse<T>(parse, out result)) {
+                result = defaultValue;
+            }
+            return result;
         }
 
     }

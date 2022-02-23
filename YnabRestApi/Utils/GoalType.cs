@@ -18,7 +18,10 @@ namespace YnabRestApi.Utils {
         MonthlyFunding,
 
         [Description("NEED")]
-        PlanYourSpending
+        PlanYourSpending,
+
+        [Description("DEBT")]
+        MonthlyDebtPayment
     }
 
     public static class GoalTypeExtensions {

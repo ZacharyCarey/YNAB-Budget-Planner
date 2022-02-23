@@ -2,5 +2,5 @@
 using YNAB_Budget_Planner;
 using YnabRestApi.ResponseData;
 
-CategoriesData budget = Ynab.GetCategories();
+CategoriesData budget = Ynab.GetCategories("last-used");
 Console.WriteLine(budget);

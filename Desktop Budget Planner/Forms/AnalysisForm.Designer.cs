@@ -34,6 +34,7 @@ namespace Desktop_Budget_Planner.Forms {
             this.YnabButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.DownloadDateLabel = new System.Windows.Forms.Label();
+            this.hideCategoriesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -44,38 +45,39 @@ namespace Desktop_Budget_Planner.Forms {
             this.incomeToolStripMenuItem,
             this.deductionsToolStripMenuItem,
             this.yNABToolStripMenuItem,
+            this.hideCategoriesToolStripMenuItem,
             this.devToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1373, 40);
+            this.menuStrip1.Size = new System.Drawing.Size(1373, 42);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
             // incomeToolStripMenuItem
             // 
             this.incomeToolStripMenuItem.Name = "incomeToolStripMenuItem";
-            this.incomeToolStripMenuItem.Size = new System.Drawing.Size(113, 36);
+            this.incomeToolStripMenuItem.Size = new System.Drawing.Size(113, 38);
             this.incomeToolStripMenuItem.Text = "Income";
             this.incomeToolStripMenuItem.Click += new System.EventHandler(this.incomeToolStripMenuItem_Click);
             // 
             // deductionsToolStripMenuItem
             // 
             this.deductionsToolStripMenuItem.Name = "deductionsToolStripMenuItem";
-            this.deductionsToolStripMenuItem.Size = new System.Drawing.Size(155, 36);
+            this.deductionsToolStripMenuItem.Size = new System.Drawing.Size(155, 38);
             this.deductionsToolStripMenuItem.Text = "Deductions";
             this.deductionsToolStripMenuItem.Click += new System.EventHandler(this.deductionsToolStripMenuItem_Click);
             // 
             // yNABToolStripMenuItem
             // 
             this.yNABToolStripMenuItem.Name = "yNABToolStripMenuItem";
-            this.yNABToolStripMenuItem.Size = new System.Drawing.Size(94, 36);
+            this.yNABToolStripMenuItem.Size = new System.Drawing.Size(94, 38);
             this.yNABToolStripMenuItem.Text = "YNAB";
             this.yNABToolStripMenuItem.Click += new System.EventHandler(this.yNABToolStripMenuItem_Click);
             // 
             // devToolStripMenuItem
             // 
             this.devToolStripMenuItem.Name = "devToolStripMenuItem";
-            this.devToolStripMenuItem.Size = new System.Drawing.Size(76, 36);
+            this.devToolStripMenuItem.Size = new System.Drawing.Size(76, 38);
             this.devToolStripMenuItem.Text = "Dev";
             this.devToolStripMenuItem.Click += new System.EventHandler(this.devToolStripMenuItem_Click);
             // 
@@ -125,6 +127,13 @@ namespace Desktop_Budget_Planner.Forms {
             this.DownloadDateLabel.TabIndex = 4;
             this.DownloadDateLabel.Text = "None";
             // 
+            // hideCategoriesToolStripMenuItem
+            // 
+            this.hideCategoriesToolStripMenuItem.Name = "hideCategoriesToolStripMenuItem";
+            this.hideCategoriesToolStripMenuItem.Size = new System.Drawing.Size(204, 38);
+            this.hideCategoriesToolStripMenuItem.Text = "Hide Categories";
+            this.hideCategoriesToolStripMenuItem.Click += new System.EventHandler(this.hideCategoriesToolStripMenuItem_Click);
+            // 
             // AnalysisForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(13F, 32F);
@@ -157,5 +166,6 @@ namespace Desktop_Budget_Planner.Forms {
         private Button YnabButton;
         private Label label1;
         private Label DownloadDateLabel;
+        private ToolStripMenuItem hideCategoriesToolStripMenuItem;
     }
 }

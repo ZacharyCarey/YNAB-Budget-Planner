@@ -1,4 +1,5 @@
-﻿using JsonSerializable;
+﻿using Common.Goals;
+using JsonSerializable;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -28,6 +29,8 @@ namespace Common.Saving {
 			}
 		}*/
 		public string? YnabApiToken { get; set; } = null;
+
+		public Dictionary<string, Goal> Goals = new Dictionary<string, Goal>();
 
 		public void LoadFromJson(JsonData Data) {
 			JsonObject data = (JsonObject)Data;
@@ -76,6 +79,16 @@ namespace Common.Saving {
 				} catch (Exception) {
 					YnabApiToken = null;
 				}
+
+                // Load goals
+                try {
+					Goals = new Dictionary<string, Goal>();
+					foreach(var goal in ((JsonObject)data["Goals"]).Items) {
+						Goals[goal.Key] = Goal.ParseFromJson(goal.Value);
+                    }
+                } catch (Exception) {
+					Goals = new Dictionary<string, Goal>();
+                }
 			}
 		}
 
@@ -101,6 +114,13 @@ namespace Common.Saving {
 				data["Deductions"] = Deductions.SaveToJson();
 				//data["Budgets"] = Budgets.SaveToJson();
 				data["YNAB API Token"] = (JsonString)YnabApiToken;
+
+				// Save goals
+				JsonObject goalsData = new JsonObject();
+				foreach(var goal in Goals) {
+					goalsData[goal.Key] = goal.Value.SaveToJson();
+                }
+				data["Goals"] = goalsData;
 			}
 			return data;
 		}

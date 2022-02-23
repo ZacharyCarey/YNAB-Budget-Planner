@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -128,6 +129,27 @@ namespace YnabRestApi.ResponseData {
 
         public override string ToString() {
             return JsonSerializer.Serialize(this, new JsonSerializerOptions() { WriteIndented = true });
+        }
+
+        // Returns true if any of the values in the category have changed compared to the given category
+        public bool HasChanged(Category? compare) {
+            if (compare == null) {
+                return true;
+            }
+
+            foreach(PropertyInfo property in typeof(Category).GetProperties()) {
+                object? thisValue = property.GetValue(this, null);
+                object? compareValue = property.GetValue(compare, null);
+
+                if(
+                    ((thisValue == null) != (compareValue == null)) 
+                    || (thisValue != null && !thisValue.Equals(compareValue))
+                ) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
     }
